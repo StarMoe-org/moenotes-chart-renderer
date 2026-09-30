@@ -39,6 +39,9 @@ remain unchanged. Reports preserve `inline_arrow_body_box_overlaps`, remaining
 `arrow_body_box_overlaps`, `flick_callouts`, `flick_rail_width` and
 `unresolved_flick_note_ids`. External skins retain their original arrow artwork. Narrow images have a minimum
 canvas width of 360 px without changing the requested lane width or time scale.
+Vertical track padding grows to fit requested note/arrow heights, including Flick
+arrows near a column end. This affects logical sheet height and absolute note y
+coordinates, while preserving ticks, lane geometry, column cuts and default spacing.
 
 `Renderer::from_skin_pack(path_to_skin_json)` loads an external game skin.
 Reuse a renderer to retain textures/fonts across calls in one worker. No promise

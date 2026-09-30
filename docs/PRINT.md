@@ -31,6 +31,8 @@ output has not been validated.
 Narrow sheets use at least 360 px of canvas width, center their tracks, and put
 the start and end timestamps on separate lines when the track is under 140 px.
 The cover, title, FC and wrapped legend remain within the canvas.
+Larger requested note/arrow heights also increase vertical track padding so
+column-end Flick arrows remain complete and clear of the column heading.
 
 ## Dense charts
 

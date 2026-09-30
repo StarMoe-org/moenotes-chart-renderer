@@ -1109,7 +1109,7 @@ pub fn render_memory(
                 &format!("{:03}—{:03}", col.first_bar, col.last_bar),
                 x,
                 if modern {
-                    top - layout::PAD - 10.
+                    top - scene.layout.options.track_padding() - 10.
                 } else {
                     layout::HEADER - 5.
                 },
@@ -1262,9 +1262,9 @@ pub fn render_memory(
             c.clip_rect(
                 Rect::new(
                     x as f32,
-                    (top - layout::PAD) as f32,
+                    (top - scene.layout.options.track_padding()) as f32,
                     (x + track) as f32,
-                    (bottom + layout::PAD) as f32,
+                    (bottom + scene.layout.options.track_padding()) as f32,
                 ),
                 None,
                 true,

@@ -1,6 +1,76 @@
 use moenotes_chart_renderer::api::{ErrorKind, Metadata, RenderOptions, Renderer};
 const CHART: &[u8] = include_bytes!("fixtures/synthetic.json");
 #[test]
+fn large_flick_at_column_end_keeps_its_arrow_tip() {
+    use moenotes_chart_renderer::{
+        api::{FlickLayout, Theme},
+        layout::{GAP, LEFT, Layout},
+        parser::Score,
+    };
+    use skia_safe::{AlphaType, ColorType, Data, Image, ImageInfo, image::CachingHint};
+
+    let chart = include_bytes!("fixtures/boundary-flick.json");
+    let renderer = Renderer::builtin().unwrap();
+    for theme in [Theme::Print, Theme::Black, Theme::Dark] {
+        let options = RenderOptions {
+            theme,
+            flick_layout: FlickLayout::Inline,
+            bars_per_column: 1,
+            note_height: 20.,
+            arrow_height: 30.,
+            auto_spacing: false,
+            supersample: 1,
+            ..RenderOptions::default()
+        };
+        let score = Score::parse(chart, false).unwrap();
+        let layout = Layout::build(&score, options.clone()).unwrap();
+        let result = renderer
+            .render(
+                chart,
+                options,
+                Metadata {
+                    title: "Boundary Flick".into(),
+                    ..Metadata::default()
+                },
+                false,
+                "boundary.png",
+                None,
+            )
+            .unwrap();
+        assert_eq!(result.pages.len(), 1);
+        assert_eq!(result.report.glyphs, 2);
+        let image = Image::from_encoded(Data::new_copy(&result.pages[0].png)).unwrap();
+        let info = ImageInfo::new((12, 10), ColorType::RGBA8888, AlphaType::Unpremul, None);
+        for (column, tick) in [(0, 1919), (1, 2879)] {
+            let x = GAP
+                + column as f64 * layout.column_width
+                + LEFT
+                + 12. * layout.options.pixels_per_lane;
+            let y = layout.y(&layout.columns[column], tick as f64) + result.report.chart_offset_y;
+            // Look above the old 26px clip at the Flick arrow's tip.
+            // This area contains neither the note body nor track/label ink.
+            let mut pixels = vec![0u8; 12 * 10 * 4];
+            assert!(image.read_pixels(
+                &info,
+                &mut pixels,
+                12 * 4,
+                ((x - 6.).floor() as i32, (y - 41.).floor() as i32),
+                CachingHint::Disallow,
+            ));
+            let arrow_pixels = pixels
+                .as_chunks::<4>()
+                .0
+                .iter()
+                .filter(|p| p[0] > p[1] && p[1] > p[2].saturating_add(10))
+                .count();
+            assert!(
+                arrow_pixels > 0,
+                "Clipped Flick tip: {theme:?}, column {column}"
+            );
+        }
+    }
+}
+#[test]
 fn large_logical_sheet_can_be_exported_below_pixel_budget() {
     let chart = br#"{"events":{},"notes":[{"t":690720,"pos":4,"size":6}]}"#;
     let renderer = Renderer::builtin().unwrap();

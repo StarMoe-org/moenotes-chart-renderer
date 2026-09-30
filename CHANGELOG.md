@@ -11,6 +11,8 @@
 - Reserve brand clearance even without cover/artist metadata, and honor critical
   mark/strict-asset options when drawing the legend.
 - Isolate parallel CLI test workspaces even when Windows timestamps coincide.
+- Grow track padding for large note/arrow settings so column-end Flick tips
+  remain complete in white, black and dark sheets; retain default geometry.
 - Preserve tick/lane geometry, column cuts, full-image export and legacy dark
   rendering. Review new Linux complete and narrow visual baselines.
 

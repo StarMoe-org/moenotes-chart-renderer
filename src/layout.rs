@@ -90,6 +90,11 @@ impl Default for Options {
     }
 }
 impl Options {
+    /// Leave room above column-end notes for the body, arrow gap and stroke.
+    /// The default padding remains unchanged for ordinary-sized artwork.
+    pub(crate) fn track_padding(&self) -> f64 {
+        PAD.max((self.note_height / 2. + self.arrow_height + 2.5).ceil())
+    }
     /// Validate the actual PNG and supersampled allocations, not logical units.
     pub(crate) fn export_dimensions(&self, width: f64, height: f64) -> Result<(i32, i32)> {
         ensure!(
@@ -262,7 +267,7 @@ impl Layout {
             .map(|c| (c.end - c.start) as f64 / 480. * options.pixels_per_beat)
             .fold(0., f64::max);
         let column_width = LEFT + 24. * options.pixels_per_lane + RIGHT + GAP;
-        let height = (HEADER + PAD * 2. + track_height + FOOTER).ceil();
+        let height = (HEADER + options.track_padding() * 2. + track_height + FOOTER).ceil();
         ensure!(
             height <= i32::MAX as f64,
             "Logical image height exceeds coordinate range"
@@ -290,7 +295,7 @@ impl Layout {
             .position(|c| c.start <= tick && tick < c.end)
     }
     pub fn y(&self, c: &Column, tick: f64) -> f64 {
-        HEADER + PAD + self.track_height
+        HEADER + self.options.track_padding() + self.track_height
             - (tick - c.start as f64) / 480. * self.options.pixels_per_beat
     }
     pub fn pages(&self) -> Vec<std::ops::Range<usize>> {
